@@ -82,8 +82,8 @@ DELIVERY_TYPE_TEXT_MAPPER = {
 
 PRODUCT_TYPE_TEXT_MAPPER = {
     ProductType.READY_PANEL: 'готовое панно',
-    ProductType.HANDMADE_PANEL: 'набор по эскизу',
-    ProductType.SKETCH_PANEL: 'готовый набор'
+    ProductType.HANDMADE_PANEL: 'готовый набор',
+    ProductType.SKETCH_PANEL: 'набор по эскизу'
 
 }
 

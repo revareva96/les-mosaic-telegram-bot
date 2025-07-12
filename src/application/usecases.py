@@ -1,11 +1,10 @@
 from enum import StrEnum
-from time import time
 
-from application.handlers import address_type_handler
 from bootstrap.constants import Callbacks, TextInfo, ProductType, States, DELIVERY_TYPE_CALLBACKS_MAPPER
 from infrastructure.dal.abstractions import IOrderRepo
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ConversationHandler
+from pydantic import BaseModel
 
 
 class OrderStatus(StrEnum):
@@ -17,43 +16,53 @@ class OrderStatus(StrEnum):
     CANCELED = 'CANCELED'
 
 
+class StartOrderCommand(BaseModel):
+    username: str
+    callback_data: str
+
+
+class CreateBaseOrderCommand(BaseModel):
+    username: str
+    product_type: str
+
+
+class AddPanelTypeCommand(BaseModel):
+    username: str
+    panel_type: str
+
+
+class AddDescCommand(BaseModel):
+    username: str
+    product_desc: str
+
+
+class AddPhotoCommand(BaseModel):
+    username: str
+    photo_id: str
+
+
+class AddAddressTypeCommand(BaseModel):
+    username: str
+    address_type: str
+
+
+class AddAddressDescCommand(BaseModel):
+    username: str
+    desc: str
+
+
+class CancelOrderCommand(BaseModel):
+    username: str
+
+
 class OrderCallbackService:
 
     def __init__(self, repo: IOrderRepo):
         self._repo = repo
 
-    # async def start_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    #     query = update.callback_query
-    #     await query.answer()
-    #     chat_id = update.effective_chat.id
-    #
-    #     query_data = query.data
-    #     if query_data == Callbacks.ORDERS:
-    #         await context.bot.send_message(
-    #             chat_id=chat_id,
-    #             text=TextInfo.ORDERS
-    #         )
-    #     elif query_data == Callbacks.NEW_ORDER:
-    #         return await panel_type_handler(chat_id=chat_id, context=context)
-    #     elif query_data == Callbacks.CANCEL_AND_CREATE:
-    #         await self._repo.update_order(
-    #             username=update.effective_chat.username,
-    #             info={
-    #                 'status': OrderStatus.CANCELED
-    #             }
-    #         )
-    #         return await panel_type_handler(chat_id=chat_id, context=context)
-    #     elif query_data.startswith(Callbacks.CONTINUE_DESC):
-    #         return await continue_desc_handler(update=update, context=context)
-    #     elif query_data.startswith(Callbacks.CONTINUE_PHOTO):
-    #         return await continue_photo_handler(chat_id=chat_id, context=context)
-    #     elif query_data.startswith(Callbacks.CONTINUE_DELIVERY):
-    #         return await order_description_handler(chat_id=update.effective_chat.id, context=context)
-    #     elif query_data == Callbacks.CONTINUE_ADDRESS:
-    #         return await address_type_handler(chat_id=chat_id, context=context)
-
-    async def start_order(self, data: str, username: str) -> tuple[str, InlineKeyboardMarkup, States]:
+    async def start_order(self, command: StartOrderCommand) -> tuple[str, InlineKeyboardMarkup, States]:
         state, markup = None, None
+        username, data = command.username, command.callback_data
         if data == Callbacks.ORDERS:
             text = TextInfo.ORDER_SAVED_TEXT_ERROR
         elif data in (Callbacks.NEW_ORDER, Callbacks.CANCEL_AND_CREATE):
@@ -95,48 +104,19 @@ class OrderCallbackService:
             state = States.ADDRESS_DESC
         return text, markup, state
 
-    # async def product_description_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    #     query = update.callback_query
-    #     await query.answer()
-    #     callback_data, username, chat_id = query.data, update.effective_chat.username, update.effective_chat.id
-    #     info = {}
-    #     if callback_data == Callbacks.PANEL:
-    #         info['product_type'] = ProductType.HANDMADE_PANEL
-    #         text = TextInfo.PANEL_DESCRIPTION
-    #     elif callback_data == Callbacks.SKETCH:
-    #         info['product_type'] = ProductType.SKETCH_PANEL
-    #         text = TextInfo.SKETCH_DESCRIPTION
-    #     else:
-    #         info['product_type'] = ProductType.READY_PANEL
-    #         text = TextInfo.PANEL_DESCRIPTION
-    #     order = await self._repo.get_uncompleted_order(username=username)
-    #     if not order:
-    #         info['username'] = username
-    #         await self._repo.create_order(info)
-    #     else:
-    #         await self._repo.update_order(username=username, info=info)
-    #     state = States.DESCRIPTION
-    #     if text == TextInfo.SKETCH_DESCRIPTION:
-    #         state = States.PHOTO_DESCRIPTION
-    #
-    #     await context.bot.send_message(
-    #         chat_id=chat_id,
-    #         text=text,
-    #     )
-    #
-    #     return state
-
-    async def add_product_description(self, data: str, username: str):
+    async def add_product_description(self, command: CreateBaseOrderCommand):
         info = {}
-        if data == Callbacks.PANEL:
+        username, product_type = command.username, command.product_type
+        if product_type == Callbacks.PANEL:
             info['product_type'] = ProductType.HANDMADE_PANEL
             text = TextInfo.PANEL_DESCRIPTION
-        elif data == Callbacks.SKETCH:
+        elif product_type == Callbacks.SKETCH:
             info['product_type'] = ProductType.SKETCH_PANEL
             text = TextInfo.SKETCH_DESCRIPTION
         else:
             info['product_type'] = ProductType.READY_PANEL
             text = TextInfo.PANEL_DESCRIPTION
+
         order = await self._repo.get_uncompleted_order(username=username)
         if not order:
             info['username'] = username
@@ -148,22 +128,14 @@ class OrderCallbackService:
             state = States.PHOTO_DESCRIPTION
         return text, state
 
-    # async def panel_type_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    #     query = update.callback_query
-    #     await query.answer()
-    #
-    #     if query.data == Callbacks.READY_PANEL:
-    #         return await self.product_description_callback(
-    #             update=update,
-    #             context=context
-    #         )
-    #     elif query.data == Callbacks.HANDMADE_PANEL:
-    #         return await handmade_panel_type_handler(update=update, context=context)
-
-    async def add_panel_type(self, data: str, username: str):
+    async def add_panel_type(self, command: AddPanelTypeCommand):
         markup = None
-        if data == Callbacks.READY_PANEL:
-            text, state = await self.add_product_description(data=data, username=username)
+        username, panel_type = command.username, command.panel_type
+        if panel_type == Callbacks.READY_PANEL:
+            text, state = await self.add_product_description(CreateBaseOrderCommand(
+                username=username,
+                product_type=panel_type
+            ))
         else:  # elif data == Callbacks.HANDMADE_PANEL
             keyboard = [
                 [
@@ -175,20 +147,12 @@ class OrderCallbackService:
             text, state = TextInfo.PANEL_SWITCH, States.HANDMADE_PANEL_TYPE
         return text, state, markup
 
-    # async def description_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    #     info = {
-    #         'description': update.message.text,
-    #         'status': OrderStatus.ADDED_DESC
-    #     }
-    #     await self._repo.update_order(username=update.effective_user.username, info=info)
-    #     return await order_description_handler(chat_id=update.effective_chat.id, context=context)
-
-    async def add_order_description(self, username: str, description: str):
+    async def add_order_description(self, command: AddDescCommand):
         info = {
-            'description': description,
+            'description': command.product_desc,
             'status': OrderStatus.ADDED_DESC
         }
-        await self._repo.update_order(username=username, info=info)
+        await self._repo.update_order(username=command.username, info=info)
 
         markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(text=TextInfo.PICKUP_DELIVERY, callback_data=Callbacks.PICKUP_DELIVERY)],
@@ -200,73 +164,38 @@ class OrderCallbackService:
         text, state = TextInfo.ORDER_SAVED_DESCRIPTION, States.ADDRESS_TYPE
         return text, state, markup
 
-    async def photo_description_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        username = update.effective_chat.username
-        docs = update.message.photo or [update.message.document]
-        if len(docs) == 0 or not docs[0] or (
-                update.message.document and not update.message.document.mime_type.startswith('image/')):
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=TextInfo.ORDER_SAVED_PHOTO_ERROR
-            )
-            return States.PHOTO_DESCRIPTION
-
-        # todo - move logic with storage adapter
-        # names = []
-        # for photo_id in docs:
-        obj = await context.bot.get_file(docs[-1])
-        ext = 'jpeg'
-        file_ext = obj.file_path.split('.')
-        if file_ext:
-            ext = file_ext[-1]
-        photo_id = f'{username}_{int(time())}.{ext}'
-        await obj.download_to_drive(custom_path=f'./photos/{photo_id}')
-        # names.append(photo_name)
-
+    async def add_photo(self, command: AddPhotoCommand):
         info = {
             'status': OrderStatus.ADDED_PHOTO,
-            'photo_id': photo_id
+            'photo_id': command.photo_id
         }
-        await self._repo.update_order(username=username, info=info)
+        await self._repo.update_order(username=command.username, info=info)
+        return TextInfo.PANEL_DESCRIPTION, States.DESCRIPTION
 
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=TextInfo.PANEL_DESCRIPTION,
-        )
-        return States.DESCRIPTION
-
-    async def address_type_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        query = update.callback_query
-        await query.answer()
+    async def add_address_type(self, command: AddAddressTypeCommand):
+        info = {
+            'status': OrderStatus.ADDED_DELIVERY,
+            'delivery_type': DELIVERY_TYPE_CALLBACKS_MAPPER[command.address_type]
+        }
         await self._repo.update_order(
-            username=update.effective_chat.username,
-            info={
-                'status': OrderStatus.ADDED_DELIVERY,
-                'delivery_type': DELIVERY_TYPE_CALLBACKS_MAPPER[query.data]
-            }
+            username=command.username,
+            info=info
         )
-        return await address_type_handler(
-            chat_id=update.effective_chat.id,
-            context=context
-        )
+        return TextInfo.ADDRESS_TYPE_SAVED, States.ADDRESS_DESC
 
-    async def address_desc_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def add_desc(self, command: AddAddressDescCommand):
         await self._repo.update_order(
-            username=update.effective_chat.username,
+            username=command.username,
             info={
                 'status': OrderStatus.ACCEPTED,
-                'address': update.message.text
+                'address': command.desc
             }
         )
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=TextInfo.ADDRESS_DESC_SAVED
-        )
-        return ConversationHandler.END
+        return TextInfo.ADDRESS_DESC_SAVED, ConversationHandler.END
 
-    async def cancel(self, username: str):
+    async def cancel(self, command: CancelOrderCommand):
         await self._repo.update_order(
-            username=username,
+            username=command.username,
             info={
                 'status': OrderStatus.CANCELED
             }

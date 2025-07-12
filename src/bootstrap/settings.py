@@ -11,3 +11,13 @@ class AppSettings(BaseSettings):
     class Config:
         env_file = BASE_DIR / '.env'
         env_prefix = 'APP_'
+
+
+class FSStorageSettings(BaseSettings):
+    path: str = './photos'
+    ext: str = '.ext'
+
+    class Config:
+        extra = 'ignore'
+        env_file = BASE_DIR / '.env'
+        env_prefix = 'FSStorage_'

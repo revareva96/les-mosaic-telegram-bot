@@ -1,6 +1,5 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import ContextTypes
-from bootstrap.constants import Callbacks, States, TextInfo, OrderStatus, PRODUCT_TYPE_TEXT_MAPPER, ProductType
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from bootstrap.constants import Callbacks, TextInfo, OrderStatus, PRODUCT_TYPE_TEXT_MAPPER, ProductType
 
 
 def switch_status_handler(status: str, product_type: str):
@@ -38,82 +37,3 @@ async def start_handler(orders: list[dict]):
         ]
 
     return text, InlineKeyboardMarkup([keyboard])
-
-
-# async def panel_type_handler(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
-#     keyboard = [
-#         [
-#             InlineKeyboardButton(text=TextInfo.READY_PANEL_DESC, callback_data=Callbacks.READY_PANEL),
-#             InlineKeyboardButton(text=TextInfo.HANDMADE_PANEL_DESC, callback_data=Callbacks.HANDMADE_PANEL)
-#         ]
-#     ]
-#     markup = InlineKeyboardMarkup(keyboard)
-#     await context.bot.send_message(
-#         chat_id=chat_id,
-#         text=TextInfo.PANEL_TYPE,
-#         reply_markup=markup
-#     )
-#     return States.PANEL_TYPE
-
-
-# async def continue_desc_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     text = TextInfo.PANEL_DESCRIPTION
-#     await context.bot.send_message(
-#         chat_id=update.effective_chat.id,
-#         text=text
-#     )
-#     return States.DESCRIPTION
-
-
-# async def continue_photo_handler(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
-#     await context.bot.send_message(
-#         chat_id=chat_id,
-#         text=TextInfo.SKETCH_DESCRIPTION
-#     )
-#     return States.PHOTO_DESCRIPTION
-
-
-# async def handmade_panel_type_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     keyboard = [
-#         [
-#             InlineKeyboardButton(text=TextInfo.PANEL_DESC, callback_data=Callbacks.PANEL),
-#             InlineKeyboardButton(text=TextInfo.SCRATCH_DESC, callback_data=Callbacks.SKETCH)
-#         ]
-#     ]
-#     markup = InlineKeyboardMarkup(keyboard)
-#     await context.bot.send_message(
-#         chat_id=update.effective_chat.id,
-#         text=TextInfo.PANEL_SWITCH,
-#         reply_markup=markup
-#     )
-#     return States.HANDMADE_PANEL_TYPE
-
-
-# async def order_description_handler(
-#         chat_id: int,
-#         context: ContextTypes.DEFAULT_TYPE
-# ):
-#     keyboard = [
-#         [InlineKeyboardButton(text=TextInfo.PICKUP_DELIVERY, callback_data=Callbacks.PICKUP_DELIVERY)],
-#         [
-#             InlineKeyboardButton(text=TextInfo.YANDEX_DELIVERY, callback_data=Callbacks.YANDEX_DELIVERY),
-#             InlineKeyboardButton(text=TextInfo.OTHER_DELIVERY, callback_data=Callbacks.OTHER_DELIVERY)
-#         ]
-#     ]
-#     await context.bot.send_message(
-#         chat_id=chat_id,
-#         text=TextInfo.ORDER_SAVED_DESCRIPTION,
-#         reply_markup=InlineKeyboardMarkup(keyboard)
-#     )
-#     return States.ADDRESS_TYPE
-
-
-async def address_type_handler(
-        chat_id: int,
-        context: ContextTypes.DEFAULT_TYPE,
-):
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text=TextInfo.ADDRESS_TYPE_SAVED
-    )
-    return States.ADDRESS_DESC

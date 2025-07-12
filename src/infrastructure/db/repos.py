@@ -11,21 +11,20 @@ class OrderRepo(IOrderRepo):
     def __init__(self, engine: AsyncEngine):
         self._engine = engine
 
-    async def get_uncompleted_order(self, username: str, statuses: set[str] = None):
-        if not statuses:
-            statuses = {OrderStatus.CREATED, OrderStatus.ADDED_DESC}
+    async def get_uncompleted_order(self, username: str):
+        final_statuses = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
         async with self._engine.begin() as connection:
             result = await connection.execute(
                 text(
                     """
                     SELECT * FROM orders
                     WHERE username = :username
-                    AND status IN :statuses
+                    AND status NOT IN :statuses
                     LIMIT 1
                     """
                 ).bindparams(
                     bindparam('username', username),
-                    bindparam('statuses', [*statuses], expanding=True)
+                    bindparam('statuses', final_statuses, expanding=True)
                 )
             )
             return [dict(row) for row in result.mappings()]
@@ -46,7 +45,7 @@ class OrderRepo(IOrderRepo):
             await connection.commit()
 
     async def update_order(self, username: str, info: dict[str, t.Any]):
-        finish_statuses = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
+        final_statuses = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
         async with self._engine.begin() as connection:
             for key, value in info.items():
                 await connection.execute(
@@ -61,7 +60,7 @@ class OrderRepo(IOrderRepo):
                         bindparam('value', value),
 
                         bindparam('username', username),
-                        bindparam('finish_statuses', finish_statuses, expanding=True)
+                        bindparam('finish_statuses', final_statuses, expanding=True)
                     ),
                 )
             await connection.commit()

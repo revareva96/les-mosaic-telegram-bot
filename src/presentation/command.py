@@ -3,7 +3,7 @@ from telegram.ext import ContextTypes, ConversationHandler
 
 from application.handlers import start_handler
 from application.queries import OrderQueries
-from application.usecases import OrderCallbackService
+from application.usecases import OrderCallbackService, CancelOrderCommand
 from bootstrap.constants import States, TextInfo
 
 
@@ -25,7 +25,7 @@ class OrderCommands:
         return States.START
 
     async def cancel(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        await self._service.cancel(update.effective_chat.username)
+        await self._service.cancel(command=CancelOrderCommand(username=update.effective_chat.username))
         await update.message.reply_text(
             text=TextInfo.CANCEL
         )
