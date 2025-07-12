@@ -2,17 +2,17 @@ import typing as t
 from sqlalchemy import text, bindparam
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from application.usecases import OrderStatus
 from infrastructure.dal.abstractions import IOrderRepo
+from bootstrap.constants import OrderStatus
 
 
 class OrderRepo(IOrderRepo):
+    _FINAL_STATUSES = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
 
     def __init__(self, engine: AsyncEngine):
         self._engine = engine
 
     async def get_uncompleted_order(self, username: str):
-        final_statuses = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
         async with self._engine.begin() as connection:
             result = await connection.execute(
                 text(
@@ -24,7 +24,7 @@ class OrderRepo(IOrderRepo):
                     """
                 ).bindparams(
                     bindparam('username', username),
-                    bindparam('statuses', final_statuses, expanding=True)
+                    bindparam('statuses', self._FINAL_STATUSES, expanding=True)
                 )
             )
             return [dict(row) for row in result.mappings()]
@@ -45,7 +45,6 @@ class OrderRepo(IOrderRepo):
             await connection.commit()
 
     async def update_order(self, username: str, info: dict[str, t.Any]):
-        final_statuses = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
         async with self._engine.begin() as connection:
             for key, value in info.items():
                 await connection.execute(
@@ -60,7 +59,7 @@ class OrderRepo(IOrderRepo):
                         bindparam('value', value),
 
                         bindparam('username', username),
-                        bindparam('finish_statuses', final_statuses, expanding=True)
+                        bindparam('finish_statuses', self._FINAL_STATUSES, expanding=True)
                     ),
                 )
             await connection.commit()

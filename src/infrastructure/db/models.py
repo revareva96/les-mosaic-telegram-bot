@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, Index, String, Enum, text, DateTime, func
-from application.usecases import OrderStatus
-from bootstrap.constants import ProductType, DeliveryType
+from sqlalchemy import Integer, Index, String, Enum, DateTime, func
+from bootstrap.constants import (ProductType, DeliveryType, OrderStatus)
 
 from sqlalchemy.ext.declarative import declarative_base
 

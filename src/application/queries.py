@@ -1,16 +1,17 @@
 from sqlalchemy import text, bindparam
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from application.usecases import OrderStatus
+from bootstrap.constants import OrderStatus
 
 
 class OrderQueries:
+
+    _FINAL_STATUSES = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
 
     def __init__(self, engine: AsyncEngine):
         self._engine = engine
 
     async def get_active_order(self, username: str):
-        finish_statuses = [OrderStatus.ACCEPTED, OrderStatus.CANCELED]
         async with self._engine.begin() as connection:
             result = await connection.execute(
                 text(
@@ -21,7 +22,7 @@ class OrderQueries:
                     """
                 ).bindparams(
                     bindparam('username', username),
-                    bindparam('status', finish_statuses, expanding=True)
+                    bindparam('status', self._FINAL_STATUSES, expanding=True)
                 )
             )
             data = [dict(row) for row in result.mappings()]

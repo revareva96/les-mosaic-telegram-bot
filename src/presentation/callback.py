@@ -1,10 +1,11 @@
-from application.usecases import OrderCallbackService, AddPhotoCommand, AddAddressTypeCommand, AddAddressDescCommand, \
-    StartOrderCommand, CreateBaseOrderCommand, AddPanelTypeCommand, AddDescCommand
-
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bootstrap.constants import Callbacks, TextInfo, States
+from application.usecases import (
+    OrderCallbackService, AddPhotoCommand, AddAddressTypeCommand, AddAddressDescCommand,
+    StartOrderCommand, CreateBaseOrderCommand, AddPanelTypeCommand, AddDescCommand
+)
+from bootstrap.constants import (TextInfo, States)
 from infrastructure.integations.file_storage.abstractions import IStorage
 
 

@@ -1,10 +1,10 @@
 from telegram import Update
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import (ContextTypes, ConversationHandler)
 
 from application.handlers import start_handler
 from application.queries import OrderQueries
-from application.usecases import OrderCallbackService, CancelOrderCommand
-from bootstrap.constants import States, TextInfo
+from application.usecases import (OrderCallbackService, CancelOrderCommand)
+from bootstrap.constants import (States, TextInfo)
 
 
 class OrderCommands:

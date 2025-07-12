@@ -1,19 +1,9 @@
-from enum import StrEnum
-
-from bootstrap.constants import Callbacks, TextInfo, ProductType, States, DELIVERY_TYPE_CALLBACKS_MAPPER
-from infrastructure.dal.abstractions import IOrderRepo
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ConversationHandler
 from pydantic import BaseModel
 
-
-class OrderStatus(StrEnum):
-    CREATED = 'CREATED'
-    ADDED_DESC = 'ADDED_DESC'
-    ADDED_PHOTO = 'ADDED_PHOTO'
-    ADDED_DELIVERY = 'ADDED_DELIVERY'
-    ACCEPTED = 'ACCEPTED'
-    CANCELED = 'CANCELED'
+from bootstrap.constants import (Callbacks, TextInfo, ProductType, States, DELIVERY_TYPE_CALLBACKS_MAPPER, OrderStatus)
+from infrastructure.dal.abstractions import IOrderRepo
 
 
 class StartOrderCommand(BaseModel):
@@ -64,7 +54,7 @@ class OrderCallbackService:
         state, markup = None, None
         username, data = command.username, command.callback_data
         if data == Callbacks.ORDERS:
-            text = TextInfo.ORDER_SAVED_TEXT_ERROR
+            text = TextInfo.ORDERS
         elif data in (Callbacks.NEW_ORDER, Callbacks.CANCEL_AND_CREATE):
             if data == Callbacks.CANCEL_AND_CREATE:
                 await self._repo.update_order(

@@ -1,10 +1,7 @@
-from pytest import mark, raises
 import os
+from pytest import mark
 
-from sqlalchemy.exc import IntegrityError
-
-from application.usecases import OrderStatus
-from bootstrap.constants import ProductType
+from bootstrap.constants import OrderStatus
 
 
 @mark.skipif(condition=not os.getenv('RUN_INTEGRATION', False), reason='Only run in integration stage')

@@ -1,5 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from bootstrap.constants import Callbacks, TextInfo, OrderStatus, PRODUCT_TYPE_TEXT_MAPPER, ProductType
+
+from bootstrap.constants import (Callbacks, TextInfo, OrderStatus, PRODUCT_TYPE_TEXT_MAPPER, ProductType)
 
 
 def switch_status_handler(status: str, product_type: str):

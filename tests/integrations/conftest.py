@@ -1,7 +1,7 @@
 from bootstrap.settings import AppSettings
 from bootstrap.constants import ProductType
 from infrastructure.db.models import Base
-from infrastructure.db.repos import OrderRepo
+from infrastructure.dal.repos import OrderRepo
 
 from pytest import fixture
 from sqlalchemy import text, bindparam
