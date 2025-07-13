@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import (create_async_engine, AsyncEngine)
 from application.queries import OrderQueries
 from application.usecases import OrderCallbackService
 from bootstrap.builder import build_conv_handler
+from bootstrap.logger import setup_logger
 from bootstrap.settings import (AppSettings, FSStorageSettings)
 from bootstrap.constants import (Commands, TextInfo)
 from infrastructure.dal.repos import OrderRepo
@@ -20,6 +21,7 @@ async def post_init(app: Application):
 def setup_app() -> Application:
     app_settings = AppSettings()
     app = Application.builder().token(app_settings.token).post_init(post_init).build()
+    setup_logger(app_settings)
 
     engine = create_engine(app_settings)
     order_repo, order_view = setup_order_repo(engine=engine), setup_order_view(engine=engine)

@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ConversationHandler
 from pydantic import BaseModel
@@ -49,6 +51,7 @@ class OrderCallbackService:
 
     def __init__(self, repo: IOrderRepo):
         self._repo = repo
+        self._logger = getLogger(name='les_mosaic')
 
     async def start_order(self, command: StartOrderCommand) -> tuple[str, InlineKeyboardMarkup, States]:
         state, markup = None, None
@@ -115,6 +118,7 @@ class OrderCallbackService:
             await self._repo.create_order(info)
         else:
             await self._repo.update_order(username=username, info=info)
+
         return text, state
 
     async def add_panel_type(self, command: AddPanelTypeCommand):

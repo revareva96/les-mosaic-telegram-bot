@@ -1,3 +1,5 @@
+from logging import getLogger
+
 from telegram import Update
 from telegram.ext import (ContextTypes, ConversationHandler)
 
@@ -12,6 +14,7 @@ class OrderCommands:
     def __init__(self, order_view: OrderQueries, order_service: OrderCallbackService):
         self._view = order_view
         self._service = order_service
+        self._logger = getLogger(name='les_mosaic')
 
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         username = update.effective_chat.username
@@ -22,6 +25,7 @@ class OrderCommands:
             text=text,
             reply_markup=markup
         )
+        self._logger.info(msg=f'Start order for user - {username}.')
         return States.START
 
     async def cancel(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -29,5 +33,5 @@ class OrderCommands:
         await update.message.reply_text(
             text=TextInfo.CANCEL
         )
-
+        self._logger.info(msg=f'Cancel order for user - {update.effective_chat.username}.')
         return ConversationHandler.END

@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).parent.parent
 class AppSettings(BaseSettings):
     token: str
     db_url: str
+    log_level: str = 'INFO'
 
     class Config:
         env_file = BASE_DIR / '.env'

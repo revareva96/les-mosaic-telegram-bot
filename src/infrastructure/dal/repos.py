@@ -45,21 +45,20 @@ class OrderRepo(IOrderRepo):
             await connection.commit()
 
     async def update_order(self, username: str, info: dict[str, t.Any]):
+        set_parts = [f"{key} = '{str(value)}'" for key, value in info.items()]
+        set_clause = ", ".join(set_parts)
         async with self._engine.begin() as connection:
-            for key, value in info.items():
-                await connection.execute(
-                    text(
-                        f"""
-                        UPDATE orders
-                        SET {key} = :value
-                        WHERE username = :username
-                        AND status NOT IN :finish_statuses
-                        """
-                    ).bindparams(
-                        bindparam('value', value),
-
-                        bindparam('username', username),
-                        bindparam('finish_statuses', self._FINAL_STATUSES, expanding=True)
-                    ),
-                )
+            await connection.execute(
+                text(
+                    f"""
+                    UPDATE orders
+                    SET {set_clause}
+                    WHERE username = :username
+                    AND status NOT IN :finish_statuses
+                    """
+                ).bindparams(
+                    bindparam('username', username),
+                    bindparam('finish_statuses', self._FINAL_STATUSES, expanding=True)
+                ),
+            )
             await connection.commit()
