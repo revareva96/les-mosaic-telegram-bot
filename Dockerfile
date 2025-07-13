@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV PATH="/src/.venv/bin:$PATH"
 
@@ -11,4 +11,4 @@ COPY ./src pyproject.toml uv.lock alembic.ini entrypoint.sh ./
 RUN uv sync --locked
 
 ENTRYPOINT ["bash", "-c", "source /src/entrypoint.sh && \"$@\"", "--"]
-CMD ["python3.11", "/src/main.py"]
+CMD ["python3.12", "/src/main.py"]
