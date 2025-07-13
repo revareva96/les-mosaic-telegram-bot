@@ -97,12 +97,14 @@ class OrderCallbackService:
     async def add_product_description(self, command: CreateBaseOrderCommand):
         info = {}
         username, product_type = command.username, command.product_type
+        state = States.DESCRIPTION
         if product_type == Callbacks.PANEL:
             info['product_type'] = ProductType.HANDMADE_PANEL
             text = TextInfo.PANEL_DESCRIPTION
         elif product_type == Callbacks.SKETCH:
             info['product_type'] = ProductType.SKETCH_PANEL
             text = TextInfo.SKETCH_DESCRIPTION
+            state = States.PHOTO_DESCRIPTION
         else:
             info['product_type'] = ProductType.READY_PANEL
             text = TextInfo.PANEL_DESCRIPTION
@@ -113,9 +115,6 @@ class OrderCallbackService:
             await self._repo.create_order(info)
         else:
             await self._repo.update_order(username=username, info=info)
-        state = States.DESCRIPTION
-        if text == TextInfo.SKETCH_DESCRIPTION:
-            state = States.PHOTO_DESCRIPTION
         return text, state
 
     async def add_panel_type(self, command: AddPanelTypeCommand):
