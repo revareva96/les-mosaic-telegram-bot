@@ -11,7 +11,7 @@ from sqlalchemy import pool
 from urllib.parse import urlparse
 
 from alembic import context
-from src.infrastructure.db.models import Base
+from infrastructure.db.models import Base
 
 config = context.config
 
